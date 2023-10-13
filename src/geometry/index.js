@@ -771,7 +771,7 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Ângulo de Direção (Angles)",
+                    text: "Direction Angle (Angles)",
                   },
                 },
                 y: {
@@ -827,7 +827,7 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Ângulo de Direção (Angles)",
+                    text: "Direction Angle (Angles)",
                   },
                 },
                 y: {
@@ -883,7 +883,7 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Ângulo de Direção (Angles)",
+                    text: "Direction Angle (Angles)",
                   },
                 },
                 y: {
@@ -939,7 +939,7 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Ângulo de Direção (Angles)",
+                    text: "Direction Angle (Angles)",
                   },
                 },
                 y: {
@@ -995,7 +995,7 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Ângulo de Direção (Angles)",
+                    text: "Direction Angle (Angles)",
                   },
                 },
                 y: {
@@ -1051,7 +1051,7 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Ângulo de Direção (Angles)",
+                    text: "Direction Angle (Angles)",
                   },
                 },
                 y: {
