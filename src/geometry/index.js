@@ -33,6 +33,13 @@ export default function Geometry() {
   const kinematicSteeringAngleCanvasRef = useRef(null);
   const pathCurvatureCanvasRef = useRef(null);
 
+  const chartRef2 = useRef(null);
+  const pitchAngleCanvasRef2 = useRef(null);
+  const lateralPositionCanvasRef2 = useRef(null);
+  const longitudinalPositionCanvasRef2 = useRef(null);
+  const kinematicSteeringAngleCanvasRef2 = useRef(null);
+  const pathCurvatureCanvasRef2 = useRef(null);
+
   const [isGeometryTrue, setIsGeometryTrue] = useState(true);
   const [isSituationTrue, setIsSituationTrue] = useState(true);
   const [isDifficultyTrue, setIsDifficultyTrue] = useState(true);
@@ -75,6 +82,12 @@ export default function Geometry() {
   const [g, setG] = useState("");
   const [e, setE] = useState("");
   const [f, setF] = useState("");
+  const [a2, setA2] = useState("");
+  const [b2, setB2] = useState("");
+  const [c2, setC2] = useState("");
+  const [g2, setG2] = useState("");
+  const [e2, setE2] = useState("");
+  const [f2, setF2] = useState("");
 
   const [originalData, setOriginalData] = useState({
     wheelbase,
@@ -83,13 +96,22 @@ export default function Geometry() {
     angles: [
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     ],
-    anglesRoll: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45],
+    anglesRoll: [
+      0, 2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35,
+      37.5, 40, 42.5, 45,
+    ],
     a,
     b,
     c,
     g,
     e,
     f,
+    a2,
+    b2,
+    c2,
+    g2,
+    e2,
+    f2,
   });
   const [updatedData, setUpdatedData] = useState({
     wheelbase,
@@ -98,18 +120,27 @@ export default function Geometry() {
     angles: [
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     ],
-    anglesRoll: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45],
+    anglesRoll: [
+      0, 2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35,
+      37.5, 40, 42.5,
+    ],
     a,
     b,
     c,
     g,
     e,
     f,
+    a2,
+    b2,
+    c2,
+    g2,
+    e2,
+    f2,
   });
 
   const [currentChartIndex, setCurrentChartIndex] = useState(0);
 
-  const δ = 10;
+  const δ = 20;
   const p = wheelbase;
   const ε = caster;
   const d = forward;
@@ -137,6 +168,16 @@ export default function Geometry() {
   );
   const [pathCurvatureData, setPathCurvatureData] = useState([]);
 
+  const [dhValuesData2, setDhValuesData2] = useState([]);
+  const [pitchAngleData2, setPitchAngleData2] = useState([]);
+  const [lateralPositionData2, setLateralPositionData2] = useState([]);
+  const [longitudinalPositionData2, setLongitudinalPositionData2] = useState(
+    []
+  );
+  const [kinematicSteeringAngleData2, setKinematicSteeringAngleData2] =
+    useState([]);
+  const [pathCurvatureData2, setPathCurvatureData2] = useState([]);
+
   function calculateSteeringHeadLowering(R_f, δ, ε, d) {
     const dhValues = [];
 
@@ -156,8 +197,68 @@ export default function Geometry() {
     return dhValues;
   }
 
+  function calculateSteeringHeadLowering2(R_f, δ, ε, d) {
+    const dhValues2 = [];
+
+    originalData.anglesRoll.forEach((angle) => {
+      const radians = (Math.PI / 180) * angle;
+      const sinδ = Math.sin(δ);
+      const sinε = Math.sin(ε);
+      const cosδ = Math.cos(δ);
+
+      const dh =
+        R_f * (1 - Math.sqrt(1 - sinδ ** 2 * sinε ** 2)) -
+        d * sinε * (1 - cosδ);
+
+      dhValues2.push(dh);
+    });
+
+    return dhValues2;
+  }
+
   function calculatePitchAngle(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
     const pitchAngles = [];
+
+    angles.forEach((angle) => {
+      const radians = (Math.PI / 180) * angle;
+
+      const c1 = d * Math.sin(ε) * (1 - Math.cos(radians)) + t_r - t_f;
+
+      const β_ =
+        ε +
+        Math.atan(
+          (Math.sin(radians) * Math.tan(φ) - Math.sin(ε) * Math.cos(radians)) /
+            Math.cos(ε)
+        );
+
+      const c2 =
+        ρ_f *
+        (Math.cos(ε) * Math.cos(β_ - ε) -
+          Math.cos(radians) * Math.sin(ε) * Math.sin(β_ - ε) -
+          1);
+
+      const c3 =
+        d * Math.sin(radians) + ρ_f * Math.sin(radians) * Math.sin(β_ - ε);
+
+      const c4 = p - d * Math.cos(ε) * (1 - Math.cos(radians));
+
+      const c5 =
+        ρ_f *
+        (Math.sin(ε) * Math.cos(β_ - ε) +
+          Math.cos(radians) * Math.cos(ε) * Math.sin(β_ - ε));
+
+      const μ =
+        ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(φ));
+
+      pitchAngles.push(μ);
+    });
+
+    return pitchAngles;
+  }
+
+  function calculatePitchAngle2(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
+    const pitchAngles2 = [];
 
     angles.forEach((angle) => {
       const radians = (Math.PI / 180) * angle;
@@ -167,7 +268,8 @@ export default function Geometry() {
       const β_ =
         ε +
         Math.atan(
-          (Math.sin(δ) * Math.tan(φ) - Math.sin(ε) * Math.cos(δ)) / Math.cos(ε)
+          (Math.sin(δ) * Math.tan(radians) - Math.sin(ε) * Math.cos(δ)) /
+            Math.cos(ε)
         );
 
       const c2 =
@@ -186,13 +288,13 @@ export default function Geometry() {
           Math.cos(δ) * Math.cos(ε) * Math.sin(β_ - ε));
 
       const μ =
-        ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
-        ((c4 + c5) * Math.cos(φ));
+        ((c1 + c2) * Math.cos(radians) + c3 * Math.sin(radians) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(radians));
 
-      pitchAngles.push(μ);
+      pitchAngles2.push(μ);
     });
 
-    return pitchAngles;
+    return pitchAngles2;
   }
 
   function calculateLateralPosition(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
@@ -201,28 +303,30 @@ export default function Geometry() {
     angles.forEach((angle) => {
       const radians = (Math.PI / 180) * angle;
 
-      const c1 = d * Math.sin(ε) * (1 - Math.cos(δ)) + t_r - t_f;
+      const c1 = d * Math.sin(ε) * (1 - Math.cos(radians)) + t_r - t_f;
 
       const β_ =
         ε +
         Math.atan(
-          (Math.sin(δ) * Math.tan(φ) - Math.sin(ε) * Math.cos(δ)) / Math.cos(ε)
+          (Math.sin(radians) * Math.tan(φ) - Math.sin(ε) * Math.cos(radians)) /
+            Math.cos(ε)
         );
 
       const c2 =
         ρ_f *
         (Math.cos(ε) * Math.cos(β_ - ε) -
-          Math.cos(δ) * Math.sin(ε) * Math.sin(β_ - ε) -
+          Math.cos(radians) * Math.sin(ε) * Math.sin(β_ - ε) -
           1);
 
-      const c3 = d * Math.sin(δ) + ρ_f * Math.sin(δ) * Math.sin(β_ - ε);
+      const c3 =
+        d * Math.sin(radians) + ρ_f * Math.sin(radians) * Math.sin(β_ - ε);
 
-      const c4 = p - d * Math.cos(ε) * (1 - Math.cos(δ));
+      const c4 = p - d * Math.cos(ε) * (1 - Math.cos(radians));
 
       const c5 =
         ρ_f *
         (Math.sin(ε) * Math.cos(β_ - ε) +
-          Math.cos(δ) * Math.cos(ε) * Math.sin(β_ - ε));
+          Math.cos(radians) * Math.cos(ε) * Math.sin(β_ - ε));
 
       const μ =
         ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
@@ -236,8 +340,8 @@ export default function Geometry() {
     return lateralPositions;
   }
 
-  function calculateLongitudinalPosition(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
-    const longitudinalPositions = [];
+  function calculateLateralPosition2(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
+    const lateralPositions2 = [];
 
     angles.forEach((angle) => {
       const radians = (Math.PI / 180) * angle;
@@ -247,7 +351,8 @@ export default function Geometry() {
       const β_ =
         ε +
         Math.atan(
-          (Math.sin(δ) * Math.tan(φ) - Math.sin(ε) * Math.cos(δ)) / Math.cos(ε)
+          (Math.sin(δ) * Math.tan(radians) - Math.sin(ε) * Math.cos(δ)) /
+            Math.cos(ε)
         );
 
       const c2 =
@@ -266,6 +371,48 @@ export default function Geometry() {
           Math.cos(δ) * Math.cos(ε) * Math.sin(β_ - ε));
 
       const μ =
+        ((c1 + c2) * Math.cos(radians) + c3 * Math.sin(radians) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(radians));
+
+      const x_pf = (c1 + c2) * Math.sin(μ) + (c4 + c5) * Math.cos(μ);
+
+      lateralPositions2.push(x_pf);
+    });
+
+    return lateralPositions2;
+  }
+  function calculateLongitudinalPosition(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
+    const longitudinalPositions = [];
+
+    angles.forEach((angle) => {
+      const radians = (Math.PI / 180) * angle;
+
+      const c1 = d * Math.sin(ε) * (1 - Math.cos(radians)) + t_r - t_f;
+
+      const β_ =
+        ε +
+        Math.atan(
+          (Math.sin(radians) * Math.tan(φ) - Math.sin(ε) * Math.cos(radians)) /
+            Math.cos(ε)
+        );
+
+      const c2 =
+        ρ_f *
+        (Math.cos(ε) * Math.cos(β_ - ε) -
+          Math.cos(radians) * Math.sin(ε) * Math.sin(β_ - ε) -
+          1);
+
+      const c3 =
+        d * Math.sin(radians) + ρ_f * Math.sin(radians) * Math.sin(β_ - ε);
+
+      const c4 = p - d * Math.cos(ε) * (1 - Math.cos(radians));
+
+      const c5 =
+        ρ_f *
+        (Math.sin(ε) * Math.cos(β_ - ε) +
+          Math.cos(radians) * Math.cos(ε) * Math.sin(β_ - ε));
+
+      const μ =
         ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
         ((c4 + c5) * Math.cos(φ));
 
@@ -275,6 +422,57 @@ export default function Geometry() {
     });
 
     return longitudinalPositions;
+  }
+  function calculateLongitudinalPosition2(
+    angles,
+    ε,
+    δ,
+    φ,
+    p,
+    d,
+    t_f,
+    t_r,
+    ρ_f
+  ) {
+    const longitudinalPositions2 = [];
+
+    angles.forEach((angle) => {
+      const radians = (Math.PI / 180) * angle;
+
+      const c1 = d * Math.sin(ε) * (1 - Math.cos(δ)) + t_r - t_f;
+
+      const β_ =
+        ε +
+        Math.atan(
+          (Math.sin(δ) * Math.tan(radians) - Math.sin(ε) * Math.cos(δ)) /
+            Math.cos(ε)
+        );
+
+      const c2 =
+        ρ_f *
+        (Math.cos(ε) * Math.cos(β_ - ε) -
+          Math.cos(δ) * Math.sin(ε) * Math.sin(β_ - ε) -
+          1);
+
+      const c3 = d * Math.sin(δ) + ρ_f * Math.sin(δ) * Math.sin(β_ - ε);
+
+      const c4 = p - d * Math.cos(ε) * (1 - Math.cos(δ));
+
+      const c5 =
+        ρ_f *
+        (Math.sin(ε) * Math.cos(β_ - ε) +
+          Math.cos(δ) * Math.cos(ε) * Math.sin(β_ - ε));
+
+      const μ =
+        ((c1 + c2) * Math.cos(radians) + c3 * Math.sin(radians) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(radians));
+
+      const x_pf = (c1 + c2) * Math.cos(μ) - (c4 + c5) * Math.sin(μ);
+
+      longitudinalPositions2.push(x_pf);
+    });
+
+    return longitudinalPositions2;
   }
 
   function calculateKinematicSteeringAngle(
@@ -296,7 +494,58 @@ export default function Geometry() {
       const β_ =
         ε +
         Math.atan(
-          (Math.sin(δ) * Math.tan(φ) - Math.sin(ε) * Math.cos(δ)) / Math.cos(ε)
+          (Math.sin(radians) * Math.tan(φ) - Math.sin(ε) * Math.cos(radians)) /
+            Math.cos(ε)
+        );
+
+      const c1 = d * Math.sin(ε) * (1 - Math.cos(radians)) + t_r - t_f;
+
+      const c2 =
+        ρ_f *
+        (Math.cos(ε) * Math.cos(β_ - ε) -
+          Math.cos(radians) * Math.sin(ε) * Math.sin(β_ - ε) -
+          1);
+
+      const c3 =
+        d * Math.sin(radians) + ρ_f * Math.sin(radians) * Math.sin(β_ - ε);
+
+      const c4 = p - d * Math.cos(ε) * (1 - Math.cos(radians));
+
+      const c5 =
+        ρ_f *
+        (Math.sin(ε) * Math.cos(β_ - ε) +
+          Math.cos(radians) * Math.cos(ε) * Math.sin(β_ - ε));
+
+      const μ =
+        ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(φ));
+
+      kinematicSteeringAngles.push(μ);
+    });
+
+    return kinematicSteeringAngles;
+  }
+  function calculateKinematicSteeringAngle2(
+    angles,
+    ε,
+    δ,
+    φ,
+    p,
+    d,
+    t_f,
+    t_r,
+    ρ_f
+  ) {
+    const kinematicSteeringAngles2 = [];
+
+    angles.forEach((angle) => {
+      const radians = (Math.PI / 180) * angle;
+
+      const β_ =
+        ε +
+        Math.atan(
+          (Math.sin(δ) * Math.tan(radians) - Math.sin(ε) * Math.cos(δ)) /
+            Math.cos(ε)
         );
 
       const c1 = d * Math.sin(ε) * (1 - Math.cos(δ)) + t_r - t_f;
@@ -317,13 +566,13 @@ export default function Geometry() {
           Math.cos(δ) * Math.cos(ε) * Math.sin(β_ - ε));
 
       const μ =
-        ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
-        ((c4 + c5) * Math.cos(φ));
+        ((c1 + c2) * Math.cos(radians) + c3 * Math.sin(radians) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(radians));
 
-      kinematicSteeringAngles.push(μ);
+      kinematicSteeringAngles2.push(μ);
     });
 
-    return kinematicSteeringAngles;
+    return kinematicSteeringAngles2;
   }
 
   function calculatePathCurvature(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
@@ -335,7 +584,51 @@ export default function Geometry() {
       const β_ =
         ε +
         Math.atan(
-          (Math.sin(δ) * Math.tan(φ) - Math.sin(ε) * Math.cos(δ)) / Math.cos(ε)
+          (Math.sin(radians) * Math.tan(φ) - Math.sin(ε) * Math.cos(radians)) /
+            Math.cos(ε)
+        );
+
+      const c1 = d * Math.sin(ε) * (1 - Math.cos(radians)) + t_r - t_f;
+
+      const c2 =
+        ρ_f *
+        (Math.cos(ε) * Math.cos(β_ - ε) -
+          Math.cos(radians) * Math.sin(ε) * Math.sin(β_ - ε) -
+          1);
+
+      const c3 =
+        d * Math.sin(radians) + ρ_f * Math.sin(radians) * Math.sin(β_ - ε);
+
+      const c4 = p - d * Math.cos(ε) * (1 - Math.cos(radians));
+
+      const c5 =
+        ρ_f *
+        (Math.sin(ε) * Math.cos(β_ - ε) +
+          Math.cos(radians) * Math.cos(ε) * Math.sin(β_ - ε));
+
+      const μ =
+        ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(φ));
+
+      const k = (μ * Math.sin(φ)) / p;
+
+      pathCurvature.push(k);
+    });
+
+    return pathCurvature;
+  }
+
+  function calculatePathCurvature2(angles, ε, δ, φ, p, d, t_f, t_r, ρ_f) {
+    const pathCurvature2 = [];
+
+    angles.forEach((angle) => {
+      const radians = (Math.PI / 180) * angle;
+
+      const β_ =
+        ε +
+        Math.atan(
+          (Math.sin(δ) * Math.tan(radians) - Math.sin(ε) * Math.cos(δ)) /
+            Math.cos(ε)
         );
 
       const c1 = d * Math.sin(ε) * (1 - Math.cos(δ)) + t_r - t_f;
@@ -356,15 +649,15 @@ export default function Geometry() {
           Math.cos(δ) * Math.cos(ε) * Math.sin(β_ - ε));
 
       const μ =
-        ((c1 + c2) * Math.cos(φ) + c3 * Math.sin(φ) + t_f - t_r) /
-        ((c4 + c5) * Math.cos(φ));
+        ((c1 + c2) * Math.cos(radians) + c3 * Math.sin(radians) + t_f - t_r) /
+        ((c4 + c5) * Math.cos(radians));
 
-      const k = (μ * Math.sin(φ)) / p;
+      const k = (μ * Math.sin(radians)) / p;
 
-      pathCurvature.push(k);
+      pathCurvature2.push(k);
     });
 
-    return pathCurvature;
+    return pathCurvature2;
   }
 
   const motometrics = [
@@ -560,6 +853,80 @@ export default function Geometry() {
       setPathCurvatureData(pathCurvatures);
       updatedMetrics.f = pathCurvatures;
 
+      const steerings2 = calculateSteeringHeadLowering2(R_f, δ, ε, d);
+      setDhValuesData2(steerings2);
+      updatedMetrics.a2 = steerings2;
+
+      const pitchAngles2 = calculatePitchAngle2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setPitchAngleData2(pitchAngles2);
+      updatedMetrics.b2 = pitchAngles2;
+
+      const lateralPositions2 = calculateLateralPosition2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setLateralPositionData2(lateralPositions2);
+      updatedMetrics.c2 = lateralPositions2;
+
+      const longitudinalPositions2 = calculateLongitudinalPosition2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setLongitudinalPositionData2(longitudinalPositions2);
+      updatedMetrics.g2 = longitudinalPositions2;
+
+      const kinematicSteeringAngles2 = calculateKinematicSteeringAngle2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setKinematicSteeringAngleData2(kinematicSteeringAngles2);
+      updatedMetrics.e2 = kinematicSteeringAngles2;
+
+      const pathCurvatures2 = calculatePathCurvature2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setPathCurvatureData2(pathCurvatures2);
+      updatedMetrics.f2 = pathCurvatures2;
+
       if (okk) {
         setOriginalData(updatedMetrics);
         console.log("deeded");
@@ -640,11 +1007,13 @@ export default function Geometry() {
 
   function executa(indice) {
     setCurrentChartIndex(indice);
+    console.log(`aqui esta idnicee: ${indice}`);
     const updatedMetrics = { ...originalData };
     updatedMetrics.wheelbase = wheelbase;
     updatedMetrics.caster = caster;
     updatedMetrics.forward = forward;
     updatedMetrics.angles = originalData.angles; // Use os ângulos originais
+    updatedMetrics.anglesRoll = originalData.anglesRoll;
 
     // Defina os dados atualizados
     console.log(updatedMetrics);
@@ -652,6 +1021,7 @@ export default function Geometry() {
 
     console.log(caster);
     console.log(updatedData);
+    console.log(caster);
     function calculateData() {
       const steerings = calculateSteeringHeadLowering(R_f, δ, ε, d);
       setDhValuesData(steerings);
@@ -727,11 +1097,87 @@ export default function Geometry() {
       setPathCurvatureData(pathCurvatures);
       updatedMetrics.f = pathCurvatures;
 
+      const steerings2 = calculateSteeringHeadLowering2(R_f, δ, ε, d);
+      setDhValuesData2(steerings2);
+      updatedMetrics.a2 = steerings2;
+
+      const pitchAngles2 = calculatePitchAngle2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setPitchAngleData2(pitchAngles2);
+      updatedMetrics.b2 = pitchAngles2;
+
+      const lateralPositions2 = calculateLateralPosition2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setLateralPositionData2(lateralPositions2);
+      updatedMetrics.c2 = lateralPositions2;
+
+      const longitudinalPositions2 = calculateLongitudinalPosition2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setLongitudinalPositionData2(longitudinalPositions2);
+      updatedMetrics.g2 = longitudinalPositions2;
+
+      const kinematicSteeringAngles2 = calculateKinematicSteeringAngle2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setKinematicSteeringAngleData2(kinematicSteeringAngles2);
+      updatedMetrics.e2 = kinematicSteeringAngles2;
+
+      const pathCurvatures2 = calculatePathCurvature2(
+        originalData.anglesRoll,
+        ε,
+        δ,
+        φ,
+        p,
+        d,
+        t_f,
+        t_r,
+        ρ_f
+      );
+      setPathCurvatureData2(pathCurvatures2);
+      updatedMetrics.f2 = pathCurvatures2;
+
       if (okk) {
         setOriginalData(updatedMetrics);
         console.log("deeded");
       }
       setUpdatedData(updatedMetrics);
+      console.log("laala");
+      console.log(updatedMetrics);
     }
 
     calculateData();
@@ -739,12 +1185,13 @@ export default function Geometry() {
     // Verifique se o gráfico deve ser atualizado (por exemplo, quando a aba atual muda)
     console.log(originalData.a);
     console.log(updatedData.a);
-    if (currentChartIndex === 0) {
+    if (indice === 0) {
       if (lig && chartInstances[currentChartIndex]) {
         chartInstances[currentChartIndex].destroy();
       }
       if (chartRef.current) {
         const ctx = chartRef.current.getContext("2d");
+        const ctx2 = chartRef2.current.getContext("2d");
         if (ctx) {
           // Configurar o novo gráfico
           const newChart = new Chart(ctx, {
@@ -786,6 +1233,45 @@ export default function Geometry() {
             },
           });
 
+          const newChart2 = new Chart(ctx2, {
+            type: "line",
+            data: {
+              labels: originalData.anglesRoll,
+              datasets: [
+                {
+                  label: "Original Data",
+                  data: originalData.a2,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+                {
+                  label: "Updated Data",
+                  data: updatedData.a2, // Linha para os dados atualizados
+                  borderColor: "rgba(255, 0, 0, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Roll Angle (°)",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Steering Head Lowering (mm)",
+                  },
+                },
+              },
+            },
+          });
+
           setChartInstances({
             ...chartInstances,
             [currentChartIndex]: newChart,
@@ -795,12 +1281,13 @@ export default function Geometry() {
       }
     }
 
-    if (currentChartIndex === 1) {
+    if (indice === 1) {
       if (lig && chartInstances[currentChartIndex]) {
         chartInstances[currentChartIndex].destroy();
       }
       if (pitchAngleCanvasRef.current) {
         const ctx = pitchAngleCanvasRef.current.getContext("2d");
+        const ctx2 = pitchAngleCanvasRef2.current.getContext("2d");
         if (ctx) {
           // Configurar o novo gráfico
           const newChart = new Chart(ctx, {
@@ -842,6 +1329,45 @@ export default function Geometry() {
             },
           });
 
+          const newChart2 = new Chart(ctx2, {
+            type: "line",
+            data: {
+              labels: originalData.anglesRoll,
+              datasets: [
+                {
+                  label: "Original Data",
+                  data: originalData.b2,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+                {
+                  label: "Updated Data",
+                  data: updatedData.b2, // Linha para os dados atualizados
+                  borderColor: "rgba(255, 0, 0, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Roll Angle (°)",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Pitch angle (°)",
+                  },
+                },
+              },
+            },
+          });
+
           setChartInstances({
             ...chartInstances,
             [currentChartIndex]: newChart,
@@ -851,12 +1377,13 @@ export default function Geometry() {
       }
     }
 
-    if (currentChartIndex === 2) {
+    if (indice === 2) {
       if (lig && chartInstances[currentChartIndex]) {
         chartInstances[currentChartIndex].destroy();
       }
       if (lateralPositionCanvasRef.current) {
         const ctx = lateralPositionCanvasRef.current.getContext("2d");
+        const ctx2 = lateralPositionCanvasRef2.current.getContext("2d");
         if (ctx) {
           // Configurar o novo gráfico
           const newChart = new Chart(ctx, {
@@ -898,6 +1425,45 @@ export default function Geometry() {
             },
           });
 
+          const newChart2 = new Chart(ctx2, {
+            type: "line",
+            data: {
+              labels: originalData.anglesRoll,
+              datasets: [
+                {
+                  label: "Original Data",
+                  data: originalData.c2,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+                {
+                  label: "Updated Data",
+                  data: updatedData.c2, // Linha para os dados atualizados
+                  borderColor: "rgba(255, 0, 0, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Roll Angle (°)",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Lateral Position (mm)",
+                  },
+                },
+              },
+            },
+          });
+
           setChartInstances({
             ...chartInstances,
             [currentChartIndex]: newChart,
@@ -907,12 +1473,13 @@ export default function Geometry() {
       }
     }
 
-    if (currentChartIndex === 3) {
+    if (indice === 3) {
       if (lig && chartInstances[currentChartIndex]) {
         chartInstances[currentChartIndex].destroy();
       }
       if (longitudinalPositionCanvasRef.current) {
         const ctx = longitudinalPositionCanvasRef.current.getContext("2d");
+        const ctx2 = longitudinalPositionCanvasRef2.current.getContext("2d");
         if (ctx) {
           // Configurar o novo gráfico
           const newChart = new Chart(ctx, {
@@ -954,6 +1521,45 @@ export default function Geometry() {
             },
           });
 
+          const newChart2 = new Chart(ctx2, {
+            type: "line",
+            data: {
+              labels: originalData.anglesRoll,
+              datasets: [
+                {
+                  label: "Original Data",
+                  data: originalData.g2,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+                {
+                  label: "Updated Data",
+                  data: updatedData.g2, // Linha para os dados atualizados
+                  borderColor: "rgba(255, 0, 0, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Rolls Angle (°)",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Longitudinal Position (mm)",
+                  },
+                },
+              },
+            },
+          });
+
           setChartInstances({
             ...chartInstances,
             [currentChartIndex]: newChart,
@@ -963,12 +1569,13 @@ export default function Geometry() {
       }
     }
 
-    if (currentChartIndex === 4) {
+    if (indice === 4) {
       if (lig && chartInstances[currentChartIndex]) {
         chartInstances[currentChartIndex].destroy();
       }
       if (kinematicSteeringAngleCanvasRef.current) {
         const ctx = kinematicSteeringAngleCanvasRef.current.getContext("2d");
+        const ctx2 = kinematicSteeringAngleCanvasRef2.current.getContext("2d");
         if (ctx) {
           // Configurar o novo gráfico
           const newChart = new Chart(ctx, {
@@ -1010,6 +1617,45 @@ export default function Geometry() {
             },
           });
 
+          const newChart2 = new Chart(ctx2, {
+            type: "line",
+            data: {
+              labels: originalData.anglesRoll,
+              datasets: [
+                {
+                  label: "Original Data",
+                  data: originalData.e2,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+                {
+                  label: "Updated Data",
+                  data: updatedData.e2, // Linha para os dados atualizados
+                  borderColor: "rgba(255, 0, 0, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Roll Angle (°)",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Kinematic Steering Angle (°)",
+                  },
+                },
+              },
+            },
+          });
+
           setChartInstances({
             ...chartInstances,
             [currentChartIndex]: newChart,
@@ -1019,12 +1665,13 @@ export default function Geometry() {
       }
     }
 
-    if (currentChartIndex === 5) {
+    if (indice === 5) {
       if (lig && chartInstances[currentChartIndex]) {
         chartInstances[currentChartIndex].destroy();
       }
       if (pathCurvatureCanvasRef.current) {
         const ctx = pathCurvatureCanvasRef.current.getContext("2d");
+        const ctx2 = pathCurvatureCanvasRef2.current.getContext("2d");
         if (ctx) {
           // Configurar o novo gráfico
           const newChart = new Chart(ctx, {
@@ -1054,6 +1701,45 @@ export default function Geometry() {
                   title: {
                     display: true,
                     text: "Direction Angle (°)",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Path Curvature (1/mm)",
+                  },
+                },
+              },
+            },
+          });
+
+          const newChart2 = new Chart(ctx2, {
+            type: "line",
+            data: {
+              labels: originalData.anglesRoll,
+              datasets: [
+                {
+                  label: "Original Data",
+                  data: originalData.f2,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+                {
+                  label: "Updated Data",
+                  data: updatedData.f2, // Linha para os dados atualizados
+                  borderColor: "rgba(255, 0, 0, 1)",
+                  borderWidth: 1,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Roll Angle (°)",
                   },
                 },
                 y: {
@@ -1141,17 +1827,35 @@ export default function Geometry() {
               <>
                 <div>
                   {currentChartIndex === 0 ? (
-                    <canvas ref={chartRef} />
+                    <>
+                      <canvas ref={chartRef} />
+                      <canvas ref={chartRef2} />
+                    </>
                   ) : currentChartIndex === 1 ? (
-                    <canvas ref={pitchAngleCanvasRef} />
+                    <>
+                      <canvas ref={pitchAngleCanvasRef} />
+                      <canvas ref={pitchAngleCanvasRef2} />
+                    </>
                   ) : currentChartIndex === 2 ? (
-                    <canvas ref={lateralPositionCanvasRef} />
+                    <>
+                      <canvas ref={lateralPositionCanvasRef} />
+                      <canvas ref={lateralPositionCanvasRef2} />
+                    </>
                   ) : currentChartIndex === 3 ? (
-                    <canvas ref={longitudinalPositionCanvasRef} />
+                    <>
+                      <canvas ref={longitudinalPositionCanvasRef} />
+                      <canvas ref={longitudinalPositionCanvasRef2} />
+                    </>
                   ) : currentChartIndex === 4 ? (
-                    <canvas ref={kinematicSteeringAngleCanvasRef} />
+                    <>
+                      <canvas ref={kinematicSteeringAngleCanvasRef} />
+                      <canvas ref={kinematicSteeringAngleCanvasRef2} />
+                    </>
                   ) : currentChartIndex === 5 ? (
-                    <canvas ref={pathCurvatureCanvasRef} />
+                    <>
+                      <canvas ref={pathCurvatureCanvasRef} />
+                      <canvas ref={pathCurvatureCanvasRef2} />
+                    </>
                   ) : (
                     <></>
                   )}
@@ -1187,6 +1891,7 @@ export default function Geometry() {
                 </div>
               </>
             )}
+
             <GraphicsButton onClick={toggleView}>
               {showMetrics ? "See Graphic" : "Back to Metrics"}
             </GraphicsButton>
