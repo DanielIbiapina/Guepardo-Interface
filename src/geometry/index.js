@@ -55,8 +55,8 @@ export default function Geometry() {
   const [forward, setForward] = useState(29.7);
   const [front, setFront] = useState(560);
   const [rear, setRear] = useState(602);
-  const [frontwheel, setFrontwheel] = useState(602);
-  const [rearwheel, setRearwheel] = useState(602);
+  const [frontwheel, setFrontwheel] = useState(431.8);
+  const [rearwheel, setRearwheel] = useState(431.8);
 
   const [metricaAntigaWheel, setMetricaAntigaWheel] = useState("");
   const [metricaAntigaCaster, setMetricaAntigaCaster] = useState("");
@@ -83,6 +83,7 @@ export default function Geometry() {
     angles: [
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     ],
+    anglesRoll: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45],
     a,
     b,
     c,
@@ -97,6 +98,7 @@ export default function Geometry() {
     angles: [
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     ],
+    anglesRoll: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45],
     a,
     b,
     c,
@@ -578,14 +580,14 @@ export default function Geometry() {
     if (index === 1) {
       setMetricaAntigaWheel(wheelbase);
       increaseOrDecrease[increaseOrDecreaseVector[0]].includes("Increase")
-        ? setWheelbase(Number(wheelbase) + 10 * levelOfDifficultyVector)
-        : setWheelbase(Number(wheelbase) - 10 * levelOfDifficultyVector);
+        ? setWheelbase(Number(wheelbase) + 5 * levelOfDifficultyVector)
+        : setWheelbase(Number(wheelbase) - 5 * levelOfDifficultyVector);
     }
     if (index === 2) {
       setMetricaAntigaCaster(caster);
       increaseOrDecrease[increaseOrDecreaseVector[1]].includes("Increase")
-        ? setCaster(Number(caster) + 1 * levelOfDifficultyVector)
-        : setCaster(Number(caster) - 1 * levelOfDifficultyVector);
+        ? setCaster(Number(caster) + 0.5 * levelOfDifficultyVector)
+        : setCaster(Number(caster) - 0.5 * levelOfDifficultyVector);
     }
     if (index === 3) {
       setMetricaAntigaForward(forward);
@@ -771,13 +773,13 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Direction Angle (Angles)",
+                    text: "Direction Angle (°)",
                   },
                 },
                 y: {
                   title: {
                     display: true,
-                    text: "Steering Head Lowering (Milimeter)",
+                    text: "Steering Head Lowering (mm)",
                   },
                 },
               },
@@ -827,13 +829,13 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Direction Angle (Angles)",
+                    text: "Direction Angle (°)",
                   },
                 },
                 y: {
                   title: {
                     display: true,
-                    text: "Pitch angle (Milimeter)",
+                    text: "Pitch angle (°)",
                   },
                 },
               },
@@ -883,13 +885,13 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Direction Angle (Angles)",
+                    text: "Direction Angle (°)",
                   },
                 },
                 y: {
                   title: {
                     display: true,
-                    text: "Lateral Position (Milimeter)",
+                    text: "Lateral Position (mm)",
                   },
                 },
               },
@@ -939,13 +941,13 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Direction Angle (Angles)",
+                    text: "Direction Angle (°)",
                   },
                 },
                 y: {
                   title: {
                     display: true,
-                    text: "Longitudinal Position (Milimeter)",
+                    text: "Longitudinal Position (mm)",
                   },
                 },
               },
@@ -995,13 +997,13 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Direction Angle (Angles)",
+                    text: "Direction Angle (°)",
                   },
                 },
                 y: {
                   title: {
                     display: true,
-                    text: "Kinematic Steering Angle (Milimeter)",
+                    text: "Kinematic Steering Angle (°)",
                   },
                 },
               },
@@ -1051,13 +1053,13 @@ export default function Geometry() {
                 x: {
                   title: {
                     display: true,
-                    text: "Direction Angle (Angles)",
+                    text: "Direction Angle (°)",
                   },
                 },
                 y: {
                   title: {
                     display: true,
-                    text: "Path Curvature (Milimeter)",
+                    text: "Path Curvature (1/mm)",
                   },
                 },
               },
@@ -1290,8 +1292,8 @@ export default function Geometry() {
                 {increaseOrDecrease[increaseOrDecreaseVector[0]].includes(
                   "Increase"
                 )
-                  ? Number(wheelbase) + 10 * levelOfDifficultyVector
-                  : Number(wheelbase) - 10 * levelOfDifficultyVector}
+                  ? Number(wheelbase) + 5 * levelOfDifficultyVector
+                  : Number(wheelbase) - 5 * levelOfDifficultyVector}
                 mm
               </SituationOption>
               <SituationOption
@@ -1303,8 +1305,8 @@ export default function Geometry() {
                 {increaseOrDecrease[increaseOrDecreaseVector[1]].includes(
                   "Increase"
                 )
-                  ? Number(caster) + 1 * levelOfDifficultyVector
-                  : Number(caster) - 1 * levelOfDifficultyVector}
+                  ? Number(caster) + 0.5 * levelOfDifficultyVector
+                  : Number(caster) - 0.5 * levelOfDifficultyVector}
                 °{" "}
               </SituationOption>
               <SituationOption
