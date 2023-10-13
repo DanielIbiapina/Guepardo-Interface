@@ -70,6 +70,39 @@ export const NextButton = styled.button`
   }
 `;
 
+export const GraphicsButton = styled.button`
+  background-color: #ffd700; /* Amarelo Forte */
+  color: #000; /* Cor do texto */
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 11px;
+  width: 100%;
+  &:hover {
+    background-color: #000; /* Amarelo mais escuro */
+    color: #ffd700;
+  }
+`;
+
+export const GraphicsNumberButton = styled.button`
+  background-color: #ffd700; /* Amarelo Forte */
+  color: #000; /* Cor do texto */
+  border: none;
+  border-radius: 5px;
+  padding: 2px 2px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 11px;
+  width: 15%;
+  height: 65px;
+  &:hover {
+    background-color: #000; /* Amarelo mais escuro */
+    color: #ffd700;
+  }
+`;
+
 export const Title = styled.h2`
   color: #ffc800; /* Amarelo Forte */
   margin-bottom: 20px;
